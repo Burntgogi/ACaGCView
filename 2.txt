@@ -1,0 +1,134 @@
+We need to modify viewer.py to accept drop events and load image path. Also update main? We'll add event handlers.## 🚀 드래그‑앤‑드롭 기능 추가
+
+아래 단계대로 **`viewer.py`** 를 수정하면, 사용자가 파일을 윈도우 탐색기(또는 바탕화면 등)에서 직접 이미지 뷰어 창으로 끌어다 놓았을 때 해당 이미지를 바로 열 수 있습니다.
+
+---
+
+## 1️⃣ `viewer.py` 업데이트
+
+```python
+# src/viewer.py
+import os, sys
+from pathlib import Path
+from PySide6.QtCore import Qt, QEvent
+from PySide6.QtGui import QPixmap, QDragEnterEvent, QDropEvent
+from PySide6.QtWidgets import (
+    QMainWindow, QLabel, QWidget, QVBoxLayout,
+    QAction, QMessageBox
+)
+# ... (기존 imports unchanged)
+
+class ImageViewer(QMainWindow):
+    SUPPORTED_EXT = {'.png', '.jpg', '.jpeg', '.bmp', '.webp', '.avif'}
+
+    def __init__(self, start_dir: str | Path = None):
+        super().__init__()
+        self.setWindowTitle("Auto‑Translate Image Viewer")
+        self.resize(1024, 768)
+
+        # ---------- UI ----------
+        self.image_label = QLabel(alignment=Qt.AlignCenter)
+        central = QWidget()
+        layout = QVBoxLayout(central)
+        layout.addWidget(self.image_label)
+        self.setCentralWidget(central)
+
+        # ---------- 드롭 허용 ----------
+        self.setAcceptDrops(True)          # **핵심**: 창 자체에 드롭 이벤트를 받게 함
+        self.image_label.setAcceptDrops(False)  # 라벨은 드롭을 무시
+
+        # 폴더/파일 로딩 초기화
+        self.current_dir = Path(start_dir or os.getcwd())
+        self.file_list = sorted([p for p in self.current_dir.iterdir() if p.suffix.lower() in self.SUPPORTED_EXT])
+        self.idx = 0
+        self.show_image()
+
+    # ---------- 드롭 이벤트 ----------
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        """드래그 중인 파일이 이미지인지 확인 후 허용"""
+        if event.mimeData().hasUrls():
+            for url in event.mimeData().urls():
+                path = Path(url.toLocalFile())
+                if path.suffix.lower() in self.SUPPORTED_EXT:
+                    event.acceptProposedAction()
+                    return
+        event.ignore()
+
+    def dropEvent(self, event: QDropEvent):
+        """드롭된 파일을 바로 열기"""
+        for url in event.mimeData().urls():
+            path = Path(url.toLocalFile())
+            if path.suffix.lower() in self.SUPPORTED_EXT:
+                # 1. 현재 폴더를 드롭한 이미지가 있는 디렉터리로 바꾸고
+                self.current_dir = path.parent
+                # 2. 해당 폴더의 이미지 리스트 재구성
+                self.file_list = sorted([p for p in self.current_dir.iterdir() if p.suffix.lower() in self.SUPPORTED_EXT])
+                # 3. 드롭한 파일을 현재 인덱스로 설정
+                try:
+                    self.idx = self.file_list.index(path)
+                except ValueError:
+                    self.idx = 0   # 찾아지면 첫번째로 표시
+                self.show_image()
+                break
+
+    # ---------- 이미지 표시 ----------
+    def show_image(self):
+        if not self.file_list:
+            QMessageBox.information(self, "No Images", "현재 폴더에 지원되는 이미지가 없습니다.")
+            return
+        path = self.file_list[self.idx]
+        pixmap = load_image(path)
+        self.image_label.setPixmap(pixmap.scaled(
+            self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+    # ---------- 나머지 기존 메서드(키 이벤트 등) ----------
+    def keyPressEvent(self, e: QKeyEvent):
+        if e.key() == Qt.Key_Tab:
+            exif = get_exif_dict(self.file_list[self.idx])
+            self.show_exif_dialog(exif)
+        elif e.modifiers() & Qt.ControlModifier and e.key() == Qt.Key_Tilde:
+            ai_params = extract_ai_params(self.file_list[self.idx])  # 구현 필요
+            AiParamsDialog(ai_params, parent=self).exec()
+        elif e.key() in (Qt.Key_BracketLeft, Qt.Key_BracketRight):
+            self.change_folder(e.key() == Qt.Key_BracketRight)
+        else:
+            super().keyPressEvent(e)
+
+    def change_folder(self, next_: bool):
+        dirs = sorted([p for p in Path(os.getcwd()).iterdir() if p.is_dir()])
+        idx = dirs.index(self.current_dir) + (1 if next_ else -1)
+        self.current_dir = dirs[idx % len(dirs)]
+        self.file_list = sorted([p for p in self.current_dir.iterdir()
+                                 if p.suffix.lower() in self.SUPPORTED_EXT])
+        self.idx = 0
+        self.show_image()
+
+    # ... (기존 ExifDialog, AiParamsDialog 등은 그대로 두세요)
+```
+
+> **핵심 포인트**  
+> - `self.setAcceptDrops(True)` 로 윈도우 자체가 드롭을 수신하도록 설정했습니다.  
+> - `dragEnterEvent` 에서 MIME 데이터에 이미지 파일이 있는지 검사하고, 있으면 이벤트를 허용합니다.  
+> - `dropEvent` 에서는 첫 번째 유효한 이미지 경로를 가져와 현재 디렉터리를 바꾸고, 해당 폴더의 이미지 리스트를 새로 만들며 드롭된 이미지를 현재 인덱스로 설정합니다.
+
+---
+
+## 2️⃣ 테스트
+
+1. **프로그램 실행**  
+   ```powershell
+   python .\src\main.py
+   ```
+2. **윈도우 탐색기에서 한 장 또는 여러 장의 이미지 파일을 선택한 뒤, 뷰어 창으로 끌어다 놓습니다.**  
+3. 뷰어가 자동으로 드롭된 이미지를 표시하고, 해당 폴더에 있는 다른 이미지들을 순차적으로 탐색할 수 있습니다.
+
+---
+
+## 3️⃣ 추가 팁
+
+- **여러 파일 드롭 시**: 현재 코드는 첫 번째 유효한 파일만 사용합니다. 필요하면 `for` 루프를 돌며 여러 이미지를 큐에 넣어 순서대로 표시하도록 확장할 수 있습니다.
+- **드롭된 폴더 지원**: 윈도우는 폴더를 드롭해도 URL 형태로 전달됩니다. 폴더가 들어오면 `path.is_dir()` 로 체크하여 해당 디렉터리 내부 이미지 리스트를 바로 보여줄 수도 있습니다.
+
+---
+
+이제 **파일 연결** 문제는 해결되었습니다! 필요하면 추가 기능(예: 폴더 드래그, 여러 파일 순서 지정 등)을 더 구현해 보세요. 🚀

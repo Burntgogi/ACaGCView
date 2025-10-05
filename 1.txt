@@ -1,0 +1,57 @@
+--- AI Metadata ---
+prompt: 2girls, uncensored, -1::multiple views::, 1::spoiledmuffin::, 1.3::artist:healthyman::, 0.5::lasto, lakilolom::, 0.4::mitsuame miiro::, 0.8::typehatena, seoyong::, 1.5::artist:asahina yoshitoshi::, year 2025, year 2024, 1.5::jaggy lines, oekaki, pixel art::, 1.5::pixel (medium), pixel lines::, 1.5::running_track, outdoors, detail background, depth of field::, best quality, amazing quality, masterpiece, very aesthetic, incredibly absurdres, absurdres, high definition,  2::highly detailed::,, -2.5::simple illustration ::, -6::artist collaboration::,  best illustration
+steps: 28
+height: 1216
+width: 832
+uncond_scale: 0.0
+cfg_rescale: 0.0
+n_samples: 1
+noise_schedule: karras
+legacy_v3_extend: False
+reference_information_extracted_multiple: 
+reference_strength_multiple: 
+extra_passthrough_testing:   prompt: None
+  uc: None
+  hide_debug_overlay: False
+  r: 0.0
+  eta: 1.0
+  negative_momentum: 0.0
+  director_reference_images: None
+  director_reference_descriptions: None
+  director_reference_information_extracted: None
+v4_prompt:   caption: {'base_caption': '2girls, uncensored, -1::multiple views::, 1::spoiledmuffin::, 1.3::artist:healthyman::, 0.5::lasto, lakilolom::, 0.4::mitsuame miiro::, 0.8::typehatena, seoyong::, 1.5::artist:asahina yoshitoshi::, year 2025, year 2024, 1.5::jaggy lines, oekaki, pixel art::, 1.5::pixel (medium), pixel lines::, 1.5::running_track, outdoors, detail background, depth of field::, best quality, amazing quality, masterpiece, very aesthetic, incredibly absurdres, absurdres, high definition,  2::highly detailed::,, -2.5::simple illustration ::, -6::artist collaboration::,  best illustration', 'char_captions': [{'char_caption': 'girl, v, detail hands, detail fingers, dark-skinned female,  2.5::one-piece tan, dark brown hair, bangs, medium high ponytail, brown eyes, black choker,  blush::, 2.0::sports_bikini, red two-tone sports bra , black panties::, 2.0::large breasts, narrow waist, thick thights, wide hips, navel::, light smile,  2.0::sweat, sweatdrop , shiny skin, humid skin, wet hair, steam::, 2.5::standing ::, 0.5::oiled body', 'centers': [{'x': 0.5, 'y': 0.5}]}, {'char_caption': 'girl, dark-skinned female, 2.5::one-piece tan, light brown hair,  bangs , inverted bob, yellow eyes, black choker,  blush::, 2.0::sports_bikini, red two-tone sports bra , black panties::, 2.0::large breasts, narrow waist, thick thights, wide hips, navel::,  cool face, expressionless,  2.0::sweat, sweatdrop , shiny skin, humid skin, wet hair, steam::, 2.5::standing::, 0.5::oiled body', 'centers': [{'x': 0.5, 'y': 0.5}]}]}
+  use_coords: False
+  use_order: True
+  legacy_uc: False
+v4_negative_prompt:   caption: {'base_caption': 'negative space, blank page, text, logo, watermark, too many watermarks, reference, signature, artist name, subtitles, captions, dated, chibi, artistic error, scan artifacts, jpeg artifacts, aliasing, film grain, heavy film grain, dithering, chromatic aberration, digital dissolve, halftone, screentone, artist:xinzoruo, artist:milkpanda, artist:kurukurumagical, artist collaboration, one-hour drawing challenge, 4koma, 2koma, mutated, mutation, deformed, distorted, disfigured, bad anatomy, unnatural hair, bad face, mob face, cloned face, distorted face, poorly drawn face, ugly, bad eyes, empty eyes, extra eyes, lazy eye, asymmetrical eyes, cross-eyed, bad proportions, wrong body proportions, unrealistic proportions, distorted body, long neck, wrong head size, bad limbs, missing limbs, extra limbs, amputee, bad arm, bad hands, malformed hands, poorly drawn hands, bad hand structure, extra digits, fewer digits, extra fingers, fused fingers, bad leg, extra leg, distorted composition, bad perspective, multiple views, disorganized colors, unrealistic colors, unfinished, incomplete, displeasing, very displeasing, unsatisfactory, inadequate, deficient, subpar, poor, blurry, lowres, duplicate, worst quality, bad quality, messy details, fewer details, bad portrait, bad illustration, twitter username, artist name, novelty censor, censor, emoji, blur censo, blur censor, greyscale', 'char_captions': [{'char_caption': 'rib, ', 'centers': [{'x': 0.5, 'y': 0.5}]}, {'char_caption': '', 'centers': [{'x': 0.5, 'y': 0.5}]}]}
+  use_coords: False
+  use_order: False
+  legacy_uc: False
+director_reference_strengths: None
+director_reference_descriptions: None
+director_reference_information_extracted: None
+controlnet_strength: 1.0
+controlnet_model: None
+dynamic_thresholding: False
+dynamic_thresholding_percentile: 0.999
+dynamic_thresholding_mimic_scale: 10.0
+sm: False
+sm_dyn: False
+skip_cfg_above_sigma: None
+skip_cfg_below_sigma: 0.0
+lora_unet_weights: None
+lora_clip_weights: None
+deliberate_euler_ancestral_bug: False
+prefer_brownian: True
+cfg_sched_eligibility: enable_for_post_summer_samplers
+explike_fine_detail: False
+minimize_sigma_inf: False
+uncond_per_vibe: True
+wonky_vibe_correlation: True
+stream: msgpack
+version: 1
+request_type: PromptGenerateRequest
+signed_hash: NSPGJ2CfHgWqGR9LgX4wueSfwpTkHoffVB7wZ2kxfMOHp/8GtLkmD2elr4/rAdwUV+xLXAJc0XIvPGRO/QBRAg==
+
+
+--- Other Metadata ---

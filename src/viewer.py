@@ -4,7 +4,7 @@ from pathlib import Path
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QDragEnterEvent, QDropEvent, QPixmap
 from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QLabel, QWidget, QVBoxLayout, QMessageBox
+    QApplication, QMainWindow, QLabel, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout
 )
 
 from .image_loader import load_image
@@ -49,9 +49,22 @@ class ImageViewer(QMainWindow):
         help_label = QLabel(self.HELP_TEXT, alignment=Qt.AlignCenter)
         help_label.setWordWrap(True)
 
+        author_label = QLabel("제작자 : AI그림채널 @아주커마니커", alignment=Qt.AlignCenter)
+
+        self.add_context_menu_button = QPushButton("윈도우 우클릭 메뉴에 추가")
+        self.add_context_menu_button.clicked.connect(self.setup_context_menu)
+        self.remove_context_menu_button = QPushButton("윈도우 우클릭 메뉴에서 제거")
+        self.remove_context_menu_button.clicked.connect(self.remove_from_context_menu)
+
+        context_menu_layout = QHBoxLayout()
+        context_menu_layout.addWidget(self.add_context_menu_button)
+        context_menu_layout.addWidget(self.remove_context_menu_button)
+
         welcome_layout.addWidget(logo_label)
+        welcome_layout.addWidget(author_label)
         welcome_layout.addWidget(help_label)
-        
+        welcome_layout.addLayout(context_menu_layout)
+
         # --- Image Label Setup ---
         self.image_label = QLabel(alignment=Qt.AlignCenter)
         self.image_label.setWordWrap(True)
@@ -178,6 +191,91 @@ class ImageViewer(QMainWindow):
                 data = self.get_cached_metadata(self.file_list[self.idx])
                 self.metadata_dialog.update_content(data, self.file_list[self.idx])
                 self.metadata_dialog.show()
+
+    def setup_context_menu(self):
+        if sys.platform != 'win32':
+            QMessageBox.information(self, "알림", "이 기능은 Windows에서만 사용할 수 있습니다.")
+            return
+
+        import winreg
+        import ctypes
+
+        try:
+            is_admin = ctypes.windll.shell32.IsUserAnAdmin()
+        except Exception:
+            is_admin = False
+
+        if not is_admin:
+            QMessageBox.warning(self, "권한 필요", "관리자 권한으로 프로그램을 다시 실행한 후 시도해주세요.")
+            return
+
+        try:
+            if getattr(sys, 'frozen', False):
+                # PyInstaller로 빌드된 .exe 파일
+                exe_path = sys.executable
+                command = f'"{exe_path}" "%1"'
+            else:
+                # Python 스크립트로 직접 실행
+                exe_path = sys.executable
+                script_path = Path(__file__).resolve().parent.parent / "main.py"
+                command = f'"{exe_path}" "{script_path}" "%1"'
+
+            menu_name = "ACaGCView로 열기"
+            key_path_template = r"SystemFileAssociations\{ext}\shell\ACaGCView"
+
+            for ext in self.SUPPORTED_EXT:
+                # 주 키 생성
+                key_path = key_path_template.format(ext=ext)
+                with winreg.CreateKey(winreg.HKEY_CLASSES_ROOT, key_path) as key:
+                    winreg.SetValue(key, None, winreg.REG_SZ, menu_name)
+                    # 아이콘 경로 추가 (옵션)
+                    # winreg.SetValueEx(key, "Icon", 0, winreg.REG_SZ, f'"{exe_path}"')
+
+                # 커맨드 키 생성
+                with winreg.CreateKey(winreg.HKEY_CLASSES_ROOT, fr"{key_path}\command") as key:
+                    winreg.SetValue(key, None, winreg.REG_SZ, command)
+            
+            QMessageBox.information(self, "성공", "우클릭 메뉴에 프로그램이 추가되었습니다.")
+
+        except Exception as e:
+            QMessageBox.critical(self, "오류", f"메뉴 추가 중 오류가 발생했습니다:\n{e}")
+
+    def remove_from_context_menu(self):
+        if sys.platform != 'win32':
+            QMessageBox.information(self, "알림", "이 기능은 Windows에서만 사용할 수 있습니다.")
+            return
+
+        import winreg
+        import ctypes
+
+        try:
+            is_admin = ctypes.windll.shell32.IsUserAnAdmin()
+        except Exception:
+            is_admin = False
+
+        if not is_admin:
+            QMessageBox.warning(self, "권한 필요", "관리자 권한으로 프로그램을 다시 실행한 후 시도해주세요.")
+            return
+
+        try:
+            key_path_template = r"SystemFileAssociations\{ext}\shell\ACaGCView"
+            deletions = 0
+            for ext in self.SUPPORTED_EXT:
+                key_path = key_path_template.format(ext=ext)
+                try:
+                    winreg.DeleteKey(winreg.HKEY_CLASSES_ROOT, fr"{key_path}\command")
+                    winreg.DeleteKey(winreg.HKEY_CLASSES_ROOT, key_path)
+                    deletions += 1
+                except FileNotFoundError:
+                    continue # 키가 없으면 그냥 지나감
+            
+            if deletions > 0:
+                QMessageBox.information(self, "성공", "우클릭 메뉴에서 프로그램을 제거했습니다.")
+            else:
+                QMessageBox.information(self, "알림", "제거할 우클릭 메뉴 항목이 없습니다.")
+
+        except Exception as e:
+            QMessageBox.critical(self, "오류", f"메뉴 제거 중 오류가 발생했습니다:\n{e}")
 
     def resizeEvent(self, event):
         if self.file_list and self.idx != -1 and self.image_label.isVisible():

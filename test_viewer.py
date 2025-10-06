@@ -1,1 +1,0 @@
-"import sys\nsys.path.insert(0, 'src')\ntry:\n    import viewer\n    print('SUCCESS: viewer module imported')\n    print(f'Module file: {viewer.__file__ if hasattr(viewer, \"__file__\") else \"No __file__ attribute\"}')\nexcept Exception as e:\n    print(f'ERROR importing viewer: {e}')\n    import traceback\n    traceback.print_exc()\n</ARG>
